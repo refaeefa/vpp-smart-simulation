@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>المحطات الكهربائية الافتراضية — من أسواق الكهرباء إلى اقتصاد الطاقة الموزعة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-dark:    #0a0e1a;
+      --bg-card:    #111827;
+      --bg-card2:   #1a2235;
+      --accent:     #00d4aa;
+      --accent2:    #f59e0b;
+      --accent3:    #6366f1;
+      --text-main:  #e2e8f0;
+      --text-muted: #94a3b8;
+      --border:     rgba(0,212,170,0.15);
+      --glow:       0 0 30px rgba(0,212,170,0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.9;
+      font-size: 17px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0a0e1a 0%, #0d1b2a 40%, #0a1628 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 20px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,212,170,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(0,212,170,0.1);
+      border: 1px solid rgba(0,212,170,0.3);
+      color: var(--accent);
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(24px, 4vw, 42px);
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .hero-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hero-meta strong { color: var(--accent); }
+
+    /* ── NAV BAR ── */
+    .topbar {
+      background: rgba(10,14,26,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,212,170,0.1);
+      border: 1px solid rgba(0,212,170,0.3);
+      color: var(--accent);
+      padding: 8px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      transition: all 0.3s;
+    }
+    .btn-back:hover {
+      background: rgba(0,212,170,0.2);
+      transform: translateX(3px);
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 48px;
+      box-shadow: var(--glow);
+    }
+    .toc h3 {
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toc ol {
+      padding-right: 20px;
+    }
+    .toc li {
+      margin-bottom: 8px;
+    }
+    .toc a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 15px;
+      transition: color 0.2s;
+    }
+    .toc a:hover { color: var(--accent); }
+
+    /* ── SECTIONS ── */
+    .section {
+      margin-bottom: 56px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-num {
+      background: linear-gradient(135deg, var(--accent), #00a88a);
+      color: #000;
+      font-weight: 900;
+      font-size: 14px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section h2 {
+      font-size: clamp(18px, 2.5vw, 26px);
+      font-weight: 800;
+      color: #fff;
+    }
+    .subsection {
+      margin-bottom: 32px;
+    }
+    .subsection h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .subsection h3::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: var(--accent2);
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .subsection h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent3);
+      margin: 18px 0 10px;
+    }
+
+    p {
+      color: var(--text-main);
+      margin-bottom: 16px;
+      font-size: 16.5px;
+    }
+
+    /* ── LISTS ── */
+    .styled-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 20px;
+    }
+    .styled-list li {
+      padding: 10px 16px 10px 16px;
+      margin-bottom: 8px;
+      background: var(--bg-card2);
+      border-radius: 10px;
+      border-right: 3px solid var(--accent);
+      font-size: 15.5px;
+      color: var(--text-main);
+      position: relative;
+    }
+    .styled-list li::before {
+      content: '◆';
+      color: var(--accent);
+      margin-left: 10px;
+      font-size: 10px;
+    }
+
+    /* ── TABLES ── */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+    thead tr {
+      background: linear-gradient(135deg, rgba(0,212,170,0.15), rgba(99,102,241,0.1));
+    }
+    thead th {
+      padding: 14px 18px;
+      text-align: right;
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+    tbody tr {
+      border-top: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.2s;
+    }
+    tbody tr:hover { background: rgba(0,212,170,0.04); }
+    tbody td {
+      padding: 13px 18px;
+      color: var(--text-main);
+      font-size: 15px;
+    }
+    tbody td:first-child { font-weight: 600; color: var(--accent2); }
+
+    /* ── CALLOUT BOXES ── */
+    .callout {
+      border-radius: 14px;
+      padding: 22px 26px;
+      margin: 24px 0;
+      border-right: 4px solid;
+    }
+    .callout-info {
+      background: rgba(99,102,241,0.08);
+      border-color: var(--accent3);
+    }
+    .callout-warning {
+      background: rgba(245,158,11,0.08);
+      border-color: var(--accent2);
+    }
+    .callout-success {
+      background: rgba(0,212,170,0.08);
+      border-color: var(--accent);
+    }
+    .callout-title {
+      font-weight: 800;
+      font-size: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .callout-info .callout-title { color: var(--accent3); }
+    .callout-warning .callout-title { color: var(--accent2); }
+    .callout-success .callout-title { color: var(--accent); }
+    .callout p { margin-bottom: 0; font-size: 15.5px; }
+
+    /* ── QUOTE ── */
+    .quote-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      text-align: center;
+      position: relative;
+    }
+    .quote-block::before {
+      content: '"';
+      font-size: 80px;
+      color: rgba(0,212,170,0.15);
+      position: absolute;
+      top: -10px;
+      right: 20px;
+      font-family: Georgia, serif;
+      line-height: 1;
+    }
+    .quote-block p {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      font-style: italic;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .quote-block cite {
+      color: var(--accent);
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    /* ── SKILL CARDS ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .skill-card {
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .skill-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+    .skill-card .icon { font-size: 32px; margin-bottom: 10px; }
+    .skill-card h4 { font-size: 15px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    .skill-card p { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+    /* ── TIMELINE ── */
+    .timeline {
+      position: relative;
+      padding-right: 30px;
+      margin: 24px 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent3));
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 28px;
+      padding-right: 30px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      right: -24px;
+      top: 6px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-dark);
+      box-shadow: 0 0 10px rgba(0,212,170,0.5);
+    }
+    .timeline-year {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .timeline-text {
+      font-size: 15px;
+      color: var(--text-main);
+    }
+
+    /* ── REFERENCES ── */
+    .references {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-top: 48px;
+    }
+    .references h2 {
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+    .ref-group h3 {
+      color: var(--accent2);
+      font-size: 15px;
+      font-weight: 700;
+      margin: 16px 0 10px;
+    }
+    .ref-item {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      line-height: 1.6;
+    }
+
+    /* ── FOOTER ── */
+    .article-footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 40px 20px;
+      text-align: center;
+      margin-top: 60px;
+    }
+    .article-footer p { color: var(--text-muted); font-size: 14px; margin-bottom: 6px; }
+    .article-footer a { color: var(--accent); text-decoration: none; font-weight: 700; }
+    .btn-sim {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--accent), #00a88a);
+      color: #000;
+      font-weight: 800;
+      font-size: 15px;
+      padding: 14px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      margin-top: 20px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(0,212,170,0.3);
+    }
+    .btn-sim:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,212,170,0.4);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .hero { padding: 40px 16px 36px; }
+      .container { padding: 24px 16px 60px; }
+      .toc, .references { padding: 20px; }
+      .skills-grid { grid-template-columns: 1fr 1fr; }
+      .hero-meta { gap: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<nav class="topbar">
+  <span class="topbar-brand">⚡ VPP Academy</span>
+  <a href="index.html" class="btn-back">← العودة للمحاكاة</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-badge">📚 مقال تعليمي — هندسة الطاقة</div>
+  <h1>المحطات الكهربائية الافتراضية<br><span>من أسواق الكهرباء إلى اقتصاد الطاقة الموزعة</span></h1>
+  <p class="hero-sub">Virtual Power Plant — VPP</p>
+  <div class="hero-meta">
+    <span>✍️ إعداد: <strong>المدرب فهد رفاعي</strong></span>
+    <span>🎓 <strong>هندسة الطاقة الكهربائية والمتجددة</strong></span>
+    <span>🌐 <strong>fahdacademy.org</strong></span>
+    <span>📅 <strong>2026</strong></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- INTRO CALLOUT -->
+  <div class="callout callout-success">
+    <div class="callout-title">🎯 هدف المقال</div>
+    <p>يستهدف هذا المقال طلاب هندسة القوى والطاقة الكهربائية الذين يسعون إلى <strong>ربط المعرفة التقنية بفهم اقتصاديات السوق</strong>، في ظل التحول الكبير نحو نماذج أكثر ذكاءً واستدامةً وتوزيعاً.</p>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <h3>📋 محتويات المقال</h3>
+    <ol>
+      <li><a href="#part1">الجزء الأول: المحطات الكهربائية الافتراضية — المفهوم والبنية</a></li>
+      <li><a href="#part2">الجزء الثاني: تقنية V2G — المركبة كمورد طاقة</a></li>
+      <li><a href="#part3">الجزء الثالث: أسواق الكهرباء — الخلفية التاريخية والهيكلية</a></li>
+      <li><a href="#part4">الجزء الرابع: التجارب العالمية — درس من البداية</a></li>
+      <li><a href="#part5">الجزء الخامس: Octopus Energy — نموذج المستقبل</a></li>
+      <li><a href="#part6">الجزء السادس: مهارات مهندس القوى في عصر VPP</a></li>
+      <li><a href="#part7">الجزء السابع: مستقبل تبادل الطاقة على مستوى الدول</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PART 1 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="part1">
+    <div class="section-header">
+      <div class="section-num">١</div>
+      <h2>المحطات الكهربائية الافتراضية — المفهوم والبنية</h2>
+    </div>
+
+    <div class="subsection">
+      <h3>١.١ ما هي المحطة الكهربائية الافتراضية؟</h3>
+      <p>تُعدّ المحطة الكهربائية الافتراضية (Virtual Power Plant — VPP) من أبرز التقنيات الناشئة في قطاع أنظمة الطاقة الكهربائية الحديثة. وعلى خلاف المحطات التقليدية التي تعتمد على منشأة مادية موحدة، فإن VPP هي <strong>منصة إلكترونية افتراضية متكاملة</strong> تعمل على جمع وإدارة مصادر الطاقة المتنوعة والمتفرقة في منطقة جغرافية واسعة.</p>
+
+      <div class="callout callout-info">
+        <div class="callout-title">💡 المفهوم الجوهري</div>
+        <p>لا توجد بنية تحتية مادية موحدة في موقع واحد — تُدار جميع الأنظمة الكهربائية عن بُعد من خلال منصة تقنية متطورة تجمع هذه المصادر وكأنها محطة توليد واحدة. ولهذا تُسمى <strong>"افتراضية"</strong>.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>الفئة</th><th>المصادر المدمجة</th></tr></thead>
+          <tbody>
+            <tr><td>مصادر الطاقة المتجددة</td><td>الألواح الشمسية الكهروضوئية، توربينات الرياح البرية والبحرية</td></tr>
+            <tr><td>مصادر التخزين</td><td>بطاريات الليثيوم المنزلية (Tesla Powerwall)، بطاريات المنشآت التجارية</td></tr>
+            <tr><td>الأنظمة الذكية</td><td>الأجهزة المنزلية الذكية (IoT)، المركبات الكهربائية عبر تقنية V2G</td></tr>
+            <tr><td>المصادر التقليدية</td><td>المولدات الاحتياطية القابلة للتحكم عن بُعد</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>١.٢ التقنيات الداعمة لمنصة VPP</h3>
+      <p>تعتمد منصة VPP على منظومة متكاملة من التقنيات المتقدمة، مما يجعلها نظاماً متعدد التخصصات يدمج الهندسة الكهربائية مع الحوسبة والاتصالات والذكاء الاصطناعي:</p>
+      <ul class="styled-list">
+        <li><strong>الذكاء الاصطناعي وتعلم الآلة</strong> — للتنبؤ بالإنتاج والاستهلاك واتخاذ القرارات التشغيلية اللحظية</li>
+        <li><strong>إنترنت الأشياء (IoT)</strong> — لربط ملايين الأجهزة الصغيرة بمركز التحكم</li>
+        <li><strong>إلكترونيات القدرة</strong> — المحولات والمقومات التي تُمكّن تبادل الطاقة بين المصادر المختلفة</li>
+        <li><strong>بروتوكولات الاتصال الصناعي</strong> — مثل IEC 61850 وMQTT وOPC-UA</li>
+        <li><strong>الحوسبة السحابية</strong> — لتخزين ومعالجة البيانات الضخمة في الوقت الفعلي</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>١.٣ مركز التحكم — Control Hub</h3>
+      <p>يتمحور عمل VPP حول مركز تحكم مركزي يؤدي أربع وظائف رئيسية:</p>
+      <div class="skills-grid">
+        <div class="skill-card">
+          <div class="icon">📡</div>
+          <h4>Real-Time Monitoring</h4>
+          <p>المراقبة اللحظية للإنتاج والاستهلاك لجميع المصادر</p>
+        </div>
+        <div class="skill-card">
+          <div class="icon">⚡</div>
+          <h4>Power Flow Control</h4>
+          <p>التحكم في تدفق القدرة وفق احتياجات الشبكة اللحظية</p>
+        </div>
+        <div class="skill-card">
+          <div class="icon">🔮</div>
+          <h4>Forecasting</h4>
+          <p>التنبؤ بالأحمال والإنتاج بمساعدة الذكاء الاصطناعي</p>
+        </div>
+        <div class="skill-card">
+          <div class="icon">🔗</div>
+          <h4>Grid Interaction</h4>
+          <p>ضمان التوازن المستمر ومنع ازدحام خطوط النقل</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PART 2 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="part2">
+    <div class="section-header">
+      <div class="section-num">٢</div>
+      <h2>تقنية V2G — المركبة كمورد طاقة</h2>
+    </div>
+
+    <div class="subsection">
+      <h3>٢.١ مفهوم Vehicle to Grid</h3>
+      <p>تُتيح تقنية VPP دمج المركبات الكهربائية في منظومة الطاقة عبر مفهوم الربط بين المركبة والشبكة (Vehicle to Grid — V2G). بطارية السيارة الكهربائية الحديثة تتراوح بين <strong>60 و100 كيلوواط ساعة</strong> — وهو ما يكفي لتغذية منزل متوسط ليومين كاملين.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>التقنية</th><th>الوصف</th><th>حالة الاستخدام</th></tr></thead>
+          <tbody>
+            <tr><td>V2G — Vehicle to Grid</td><td>تغذية الشبكة الكهربائية العامة</td><td>أوقات الذروة والطوارئ</td></tr>
+            <tr><td>V2H — Vehicle to Home</td><td>تغذية المنزل مباشرة دون الشبكة</td><td>انقطاع التيار</td></tr>
+            <tr><td>V2B — Vehicle to Building</td><td>تغذية مبنى تجاري أو صناعي</td><td>خفض تكاليف الطاقة</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>٢.٢ الفوائد الاقتصادية للمستخدم</h3>
+      <ul class="styled-list">
+        <li>دخل مالي مباشر من بيع الطاقة للشبكة في أوقات الذروة</li>
+        <li>شحن مجاني أو بأسعار مخفضة مقابل المشاركة في برامج الاستجابة</li>
+        <li>المساهمة في دعم منظومة الطاقة المستدامة والحياد الكربوني</li>
+        <li>حماية من انقطاع التيار عبر استخدام بطارية السيارة كمصدر احتياطي</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>٢.٣ المتطلب التقني الأبرز</h3>
+      <div class="callout callout-warning">
+        <div class="callout-title">⚠️ الشواحن ثنائية الاتجاه — Bidirectional Chargers</div>
+        <p>مجرد توصيل المركبة بالشاحن لا يعني إمكانية سحب الطاقة منها. يجب أن تكون المركبة مزودة بشاحن يسمح بتدفق الطاقة في كلا الاتجاهين — وهو ما يشبه وظيفة العداد الذكي (Smart Meter) المستخدم في المنازل لدعم أنظمة الطاقة الشمسية.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PART 3 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="part3">
+    <div class="section-header">
+      <div class="section-num">٣</div>
+      <h2>أسواق الكهرباء — الخلفية التاريخية والهيكلية</h2>
+    </div>
+
+    <div class="subsection">
+      <h3>٣.١ لماذا تحرير قطاع الكهرباء؟</h3>
+      <p>قبل موجة التحرير التي اجتاحت القطاع في الثمانينيات والتسعينيات، كان النموذج السائد هو <strong>الاحتكار العمودي</strong> — شركة واحدة تملك التوليد والنقل والتوزيع والبيع. أدى ذلك إلى غياب الكفاءة وانعدام الحافز للابتكار وارتفاع التكاليف على المستهلك.</p>
+      <p>الحل كان <strong>Liberalisation</strong> — فصل هذه الأنشطة وإدخال المنافسة حيث أمكن، مع الإبقاء على التنظيم في المجالات ذات الطابع الاحتكاري الطبيعي كشبكات النقل والتوزيع.</p>
+    </div>
+
+    <div class="subsection">
+      <h3>٣.٢ هيكل السوق — Unbundling</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>القطاع</th><th>النوع</th><th>إمكانية المنافسة</th></tr></thead>
+          <tbody>
+            <tr><td>Generation — التوليد</td><td>نشاط تنافسي</td><td>✅ نعم — مفتوح للجميع</td></tr>
+            <tr><td>Transmission — النقل</td><td>احتكار طبيعي — TSO</td><td>❌ لا — يخضع للتنظيم</td></tr>
+            <tr><td>Distribution — التوزيع</td><td>احتكار طبيعي — DSO</td><td>❌ لا — يخضع للتنظيم</td></tr>
+            <tr><td>Retail — التجزئة</td><td>نشاط تنافسي</td><td>✅ نعم — منافسة كاملة</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>٣.٣ أنواع الأسواق</h3>
+      <ul class="styled-list">
+        <li><strong>Day-Ahead Market:</strong> يُقدّم المولدون عروضهم قبل 24 ساعة ويُرتَّبون وفق Merit Order</li>
+        <li><strong>Intraday Market:</strong> تعديلات تُجرى أقرب لوقت التشغيل لتصحيح أخطاء التوقع</li>
+        <li><strong>Balancing Market:</strong> تدخل مشغّل الشبكة في اللحظة الأخيرة — الأغلى سعراً</li>
+        <li><strong>Forward & Futures Markets:</strong> عقود مستقبلية للتحوط من تقلبات الأسعار</li>
+        <li><strong>Capacity Market:</strong> يدفع مقابل الجاهزية للإنتاج وليس الإنتاج الفعلي</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>٣.٤ Marginal Pricing — قلب السوق</h3>
+      <div class="callout callout-success">
+        <div class="callout-title">💰 المبدأ الأساسي</div>
+        <p>جميع المولدين يحصلون على <strong>نفس السعر</strong> — سعر آخر وحدة دخلت السوق. تُرتَّب المحطات من الأرخص للأغلى (Merit Order) وتُشغَّل حتى يتساوى العرض مع الطلب. آخر محطة دُعيت (Marginal Unit) تحدد السعر للجميع.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PART 4 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="part4">
+    <div class="section-header">
+      <div class="section-num">٤</div>
+      <h2>التجارب العالمية — درس من البداية</h2>
+    </div>
+
+    <div class="subsection">
+      <h3>٤.١ تجربة بريطانيا — الريادة والتطور</h3>
+      <p>أطلقت بريطانيا أول سوق كهرباء منظّم في العالم عام 1990 تحت اسم <strong>Electricity Pool of England and Wales</strong>، كجزء من موجة الخصخصة في عهد تاتشر.</p>
+
+      <h4>آلية عمل الـ Pool</h4>
+      <p>كان المولدون يقدمون عروض أسعارهم يومياً، ويرتبها السوق وفق Merit Order، ليُحدِّد آخر محطة دُعيت السعرَ لجميع المولدين عبر System Marginal Price (SMP). يُضاف فوق ذلك مدفوع القدرة المرتبط باحتمال العجز (LOLP × VOLL).</p>
+
+      <h4>مشكلة تركّز السوق</h4>
+      <p>سيطرت شركتان رئيسيتان هما <strong>National Power</strong> و<strong>PowerGen</strong> على معظم قدرة التوليد، مما أدى إلى ممارسات تلاعب بالأسعار:</p>
+      <ul class="styled-list">
+        <li><strong>Capacity Withholding:</strong> إعلان محطات جاهزة على أنها غير متاحة لرفع السعر</li>
+        <li><strong>Strategic Bidding:</strong> تقديم عروض مرتفعة في أوقات الطلب العالي استغلالاً للاحتكار</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>٤.٢ تجربة كاليفورنيا — الدرس المؤلم</h3>
+      <p>فتحت كاليفورنيا سوقها الكهربائي عام 1998 بطموح كبير، لكنها شهدت انهياراً كاملاً في 2000-2001 صار يُدرَّس كنموذج سلبي في جامعات العالم.</p>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">📚 الدروس المستفادة</div>
+        <p>العقود الطويلة ليست عدو المنافسة — بل درع الاستقرار. Market Power يجب معالجته قبل التحرير وليس بعده. تصميم السوق تفاصيله مصيرية — نظرية الألعاب جزء لا يتجزأ من التصميم.</p>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>٤.٣ مقارنة بريطانيا وكاليفورنيا</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>المعيار</th><th>بريطانيا — Pool/NETA</th><th>كاليفورنيا — CAISO/PX</th></tr></thead>
+          <tbody>
+            <tr><td>بداية التحرير</td><td>1990 — تدريجي ومدروس</td><td>1998 — سريع وطموح</td></tr>
+            <tr><td>العقود الطويلة</td><td>مشجَّعة كآلية تحوط</td><td>محظورة على شركات التوزيع</td></tr>
+            <tr><td>Capacity Market</td><td>محدد بوضوح</td><td>غير محدد بوضوح</td></tr>
+            <tr><td>التلاعب</td><td>مشكلة أُدريت تنظيمياً</td><td>كارثي — Enron وآخرون</td></tr>
+            <tr><td>النتيجة</td><td>✅ نجاح نسبي ومستمر</td><td>❌ انهيار وإفلاس شركات</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>٤.٤ Nord Pool — النموذج الذهبي</h3>
+      <p>بدأ عام 1993 بين النرويج والسويد فقط ثم توسّع ليصبح <strong>أنجح سوق كهرباء إقليمي في العالم</strong>. يتميز بسوق Day-Ahead (Elspot) وسوق Intraday (Elbas)، وتُمثّل الطاقة المائية الاسكندنافية بطارية طبيعية ضخمة تمنحه مرونة استثنائية.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PART 5 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="part5">
+    <div class="section-header">
+      <div class="section-num">٥</div>
+      <h2>Octopus Energy — نموذج المستقبل</h2>
+    </div>
+
+    <div class="subsection">
+      <h3>٥.١ من هي Octopus Energy؟</h3>
+      <p>تأسست Octopus Energy عام 2016 في لندن كشركة تجزئة كهرباء صغيرة دخلت سوقاً تهيمن عليه شركات عملاقة. ما جعلها مختلفة هو بناؤها منصتها التقنية الخاصة من الصفر (<strong>Kraken</strong>) بدلاً من شراء أنظمة قديمة باهظة، مما خفّض تكاليفها التشغيلية بشكل جذري.</p>
+      <ul class="styled-list">
+        <li><strong>Octopus Retail:</strong> شركة تجزئة — تشتري بالجملة وتبيع للمستهلك النهائي</li>
+        <li><strong>Octopus Energy Generation:</strong> ذراع استثماري يملك مزارع رياح وشمس</li>
+        <li><strong>Kraken:</strong> منصة تقنية تُباع لشركات الطاقة حول العالم — تُدير 50 مليون حساب</li>
+        <li><strong>Octopus Flexibility:</strong> مشغّل VPP فعلي يجمع الموارد الموزعة ويتداول في السوق</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>٥.٢ منتج Agile Octopus — ثورة التسعير</h3>
+      <p>بدلاً من سعر ثابت للكهرباء، يحصل مشتركو Agile على <strong>سعر يتغير كل 30 دقيقة</strong> يعكس سعر الجملة في السوق البريطاني مباشرة:</p>
+      <ul class="styled-list">
+        <li>منتصف الليل مع رياح قوية: السعر يصل للصفر أو <strong>سالب</strong> — Octopus تدفع لك لتستهلك</li>
+        <li>الساعة 6 مساءً ذروة الطلب: السعر يرتفع بشكل حاد — فرصة لتفريغ البطارية</li>
+      </ul>
+      <div class="callout callout-info">
+        <div class="callout-title">🔄 Demand Side Response</div>
+        <p>هذا تطبيق مباشر لـ Demand Side Response — تحريك الاستهلاك من أوقات الذروة لأوقات الوفرة بدلاً من بناء محطات احتياطية إضافية.</p>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>٥.٣ تجربة سخانات المياه 2021 — VPP في الواقع</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>لماذا سخان المياه؟</th></tr></thead>
+          <tbody>
+            <tr><td>سخان المياه الكهربائي = <strong>بطارية حرارية</strong>: الماء المسخَّن لـ 70 درجة يحتفظ بحرارته لساعات — الماء الذي تُسخّنه الساعة 2 فجراً لا يزال دافئاً الساعة 7 صباحاً.</td></tr>
+            <tr><td>طاقة الرياح في منتصف الليل تفوق الاستهلاك — National Grid يدفع لإيقاف المحطات. بدلاً من ذلك: Octopus تدفع للعملاء ليستهلكوا الفائض.</td></tr>
+            <tr><td><strong>القدرة الكاملة:</strong> مليون سخان × 2.5 كيلوواط = <strong>2.5 غيغاواط</strong> — يعادل محطتين نوويتين متوسطتين.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>٥.٤ التطور من 2021 إلى 2026</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>المعيار</th><th>2021</th><th>2026</th></tr></thead>
+          <tbody>
+            <tr><td>الأجهزة</td><td>سخان مياه فقط</td><td>سخان + سيارة + بطارية + مكيف</td></tr>
+            <tr><td>التشغيل</td><td>أنت تشغّل يدوياً بعد رسالة</td><td>تلقائي كامل بلا تدخل</td></tr>
+            <tr><td>العائد</td><td>خصم بسيط على الفاتورة</td><td>دخل مالي فعلي من السوق</td></tr>
+            <tr><td>سرعة الاستجابة</td><td>بالساعات</td><td>بالثواني</td></tr>
+            <tr><td>نسبة الاستجابة</td><td>10-15% من العملاء</td><td>95%+ استجابة تلقائية</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>٥.٥ مصادر إيرادات Octopus</h3>
+      <ul class="styled-list">
+        <li><strong>Balancing Mechanism:</strong> تبيع لـ National Grid قدرة موازنة فورية بأسعار أعلى</li>
+        <li><strong>Frequency Response:</strong> الاستجابة لتغيرات التردد عن 50 هرتز — مدفوع بمعدلات ممتازة</li>
+        <li><strong>Capacity Market:</strong> تشارك كمورد افتراضي Virtual — مدفوعة مسبقاً حتى قبل الاستخدام</li>
+        <li><strong>Negative Price Arbitrage:</strong> شحن البطاريات بسعر سالب وبيعها بسعر موجب</li>
+        <li><strong>Kraken SaaS:</strong> رسوم الترخيص من شركات الطاقة العالمية التي تستخدم المنصة</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PART 6 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="part6">
+    <div class="section-header">
+      <div class="section-num">٦</div>
+      <h2>مهارات مهندس القوى في عصر VPP</h2>
+    </div>
+
+    <p>مهندس القوى والطاقة في عصر VPP لا يكفيه أن يفهم الكهرباء وحدها — بل يحتاج إلى <strong>أربعة محاور متكاملة</strong>:</p>
+
+    <div class="subsection">
+      <h3>المحور الأول: المهارات التقنية الأساسية</h3>
+      <ul class="styled-list">
+        <li><strong>أنظمة الطاقة الموزعة (DER):</strong> فهم عميق لكيفية ربط المصادر الصغيرة بالشبكة الكبيرة</li>
+        <li><strong>إلكترونيات القدرة:</strong> المحولات والمقومات — قلب كل منظومة VPP</li>
+        <li><strong>أنظمة التخزين:</strong> إدارة دورات الشحن والتفريغ وحماية البطاريات من التدهور</li>
+        <li><strong>الشبكات الذكية:</strong> بروتوكولات IEC 61850 وDNP3 وModbus</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>المحور الثاني: مهارات البيانات والذكاء الاصطناعي</h3>
+      <ul class="styled-list">
+        <li><strong>Python:</strong> اللغة المهيمنة في تحليل بيانات الطاقة ونمذجة الأنظمة</li>
+        <li><strong>تحليل البيانات:</strong> Pandas وMatplotlib وPower BI لرصد أنماط الاستهلاك</li>
+        <li><strong>أساسيات Machine Learning:</strong> فهم نماذج التنبؤ بالأحمال وتقييم دقتها</li>
+        <li><strong>نمذجة الأنظمة:</strong> MATLAB/Simulink وHOMER Energy</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>المحور الثالث: الاتصالات وإنترنت الأشياء</h3>
+      <ul class="styled-list">
+        <li><strong>بروتوكولات الاتصال الصناعي:</strong> MQTT وOPC-UA وIEC 61968</li>
+        <li><strong>IoT التطبيقي:</strong> برمجة الحساسات وربطها بالسحابة</li>
+        <li><strong>أمن المعلومات الصناعي (OT Security):</strong> حماية الأنظمة الصناعية من الهجمات</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>المحور الرابع: المهارات التنظيمية والاقتصادية</h3>
+      <ul class="styled-list">
+        <li><strong>أسواق الطاقة:</strong> آليات التسعير الديناميكي وائتمانات الكربون</li>
+        <li><strong>التشريعات والمعايير:</strong> IEEE وIEC المتعلقة بربط المصادر الموزعة</li>
+        <li><strong>إدارة المشاريع التقنية:</strong> قيادة فرق متعددة التخصصات</li>
+      </ul>
+    </div>
+
+    <div class="subsection">
+      <h3>خارطة التطوير الذاتي</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>المرحلة</th><th>المهارة المستهدفة</th><th>المدة المقترحة</th></tr></thead>
+          <tbody>
+            <tr><td>الآن — الأساس</td><td>Python + تحليل بيانات الطاقة</td><td>3 إلى 6 أشهر</td></tr>
+            <tr><td>قريباً — التعمق</td><td>إلكترونيات القدرة + أنظمة التخزين</td><td>6 أشهر</td></tr>
+            <tr><td>متوسط المدى</td><td>بروتوكولات الشبكات الذكية + IoT</td><td>6 إلى 12 شهراً</td></tr>
+            <tr><td>بعيد المدى</td><td>شهادات IEEE PES / NABCEP + أسواق الطاقة</td><td>حسب الفرصة</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PART 7 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="part7">
+    <div class="section-header">
+      <div class="section-num">٧</div>
+      <h2>مستقبل تبادل الطاقة على مستوى الدول والأقاليم</h2>
+    </div>
+
+    <div class="subsection">
+      <h3>٧.١ من الشبكة الهرمية إلى الشبكة التشابكية</h3>
+      <p>الشبكة الكهربائية التقليدية هرمية البنية — محطة مركزية تُوزّع الطاقة للمستهلكين بشكل أحادي الاتجاه. مستقبل الشبكة هو <strong>نموذج تشابكي مستوحى من بنية الإنترنت</strong>: كل نقطة قادرة على الإرسال والاستقبال، ودور الدولة يتحول من إنتاج الطاقة إلى إدارة التوازن بين ملايين المصادر الصغيرة.</p>
+    </div>
+
+    <div class="subsection">
+      <h3>٧.٢ التبادل الإقليمي — الخليج كمثال</h3>
+      <p>الخليج العربي يمتلك مقومات فريدة للتبادل الإقليمي: <strong>السعودية</strong> بإمكاناتها الشمسية الهائلة، و<strong>عُمان</strong> برياحها الساحلية القوية، وصغر المسافات الجغرافية بين الدول. الربط الكهربائي الخليجي موجود جزئياً الآن — لكن توسيعه بمنطق VPP الإقليمي سيُحوّله من رابط طارئ إلى سوق طاقة حقيقي.</p>
+    </div>
+
+    <div class="subsection">
+      <h3>٧.٣ الشروط الثلاثة لنجاح التبادل</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>الشرط</th><th>التفاصيل</th></tr></thead>
+          <tbody>
+            <tr><td>أولاً — البنية التحتية</td><td>كابلات نقل عالية الجهد (HVDC) وشبكات اتصال فائقة السرعة تربط المصادر الموزعة</td></tr>
+            <tr><td>ثانياً — التشريع</td><td>من يملك بيانات الاستهلاك؟ كيف تُحدَّد الأسعار لحظياً؟ ما حقوق المنتج الصغير؟</td></tr>
+            <tr><td>ثالثاً — الثقة الرقمية</td><td>تقنية Blockchain تُستخدم فعلاً في بعض التجارب لتسجيل كل صفقة طاقة بشكل موثوق وشفاف</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>٧.٤ نماذج الأعمال في سوق الطاقة الموزعة</h3>
+      <ul class="styled-list">
+        <li><strong>نموذج التجميع (Aggregator):</strong> جمع آلاف المنازل والسيارات وبيع طاقتها بالجملة — مثل Uber للكهرباء</li>
+        <li><strong>نموذج SaaS الطاقة:</strong> بيع برنامج إدارة الطاقة كاشتراك شهري للمنشآت الكبيرة</li>
+        <li><strong>خدمات موازنة الشبكة:</strong> بيع خدمة التوازن اللحظي للشبكة الوطنية — أعلى عائداً</li>
+        <li><strong>ائتمانات الكربون:</strong> تحويل الطاقة النظيفة لشهادات تُباع في أسواق دولية</li>
+        <li><strong>تحكيم الأسعار الزمني:</strong> شراء رخيصاً في الوفرة وتخزيناً وبيعاً في الذروة</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- CONCLUSION -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-num">✦</div>
+      <h2>الخاتمة</h2>
+    </div>
+    <p>تقنية المحطات الكهربائية الافتراضية ليست مجرد ابتكار تقني — إنها <strong>إعادة هيكلة شاملة لمنظومة الطاقة العالمية</strong> نحو نموذج أكثر استدامةً وكفاءةً وعدالةً. عندما يصبح كل مستهلك منتجاً، وكل بطارية مورد طاقة، وكل سيارة محطة متنقلة — تتكسّر القوة الاحتكارية للشركات الكبرى وتُعاد للأفراد والمجتمعات.</p>
+    <p>مهندس القوى والطاقة الذي يفهم هذا التحول — ويجمع بين خبرة الشبكات الكلاسيكية وأدوات البيانات والذكاء الاصطناعي وفهم اقتصاديات السوق — هو الأكثر قيمةً وأثراً في سوق الطاقة لعقود قادمة.</p>
+
+    <div class="quote-block">
+      <p>"الرسالة التي وصلتك من Octopus في 2021 تطلب منك تشغيل السخان كانت في جوهرها دعوة للمشاركة في سوق الطاقة البريطاني. لم يكن ذلك واضحاً وقتها — لكنه اليوم نموذج يُدرَّس في أرقى الجامعات. المستقبل لمن يرى هذه الروابط الخفية بين التقنية والاقتصاد والسياسة."</p>
+      <cite>— المدرب فهد رفاعي، fahdacademy.org</cite>
+    </div>
+  </section>
+
+  <!-- REFERENCES -->
+  <div class="references">
+    <h2>📚 المصادر والمراجع</h2>
+    <div class="ref-group">
+      <h3>أولاً: التقنية والهندسة</h3>
+      <div class="ref-item">[1] Pudjianto, D., Ramsay, C., & Strbac, G. (2007). Virtual power plant and system integration of distributed energy resources. IET Renewable Power Generation, 1(1), 10-16.</div>
+      <div class="ref-item">[2] Bessa, R. J., et al. (2014). Optimized bidding of a EV aggregation agent in the electricity market. IEEE Transactions on Smart Grid.</div>
+      <div class="ref-item">[4] IEC 61850 Standard: Communication Networks and Systems for Power Utility Automation. International Electrotechnical Commission.</div>
+      <div class="ref-item">[5] National Grid ESO. (2023). Future Energy Scenarios. nationalgrideso.com</div>
+    </div>
+    <div class="ref-group">
+      <h3>ثانياً: أسواق الكهرباء</h3>
+      <div class="ref-item">[6] Hunt, S. (2002). Making Competition Work in Electricity. John Wiley & Sons.</div>
+      <div class="ref-item">[7] Stoft, S. (2002). Power System Economics: Designing Markets for Electricity. IEEE Press & Wiley-Interscience.</div>
+      <div class="ref-item">[8] Joskow, P. L. (2001). California's Electricity Crisis. Oxford Review of Economic Policy, 17(3), 365-388.</div>
+      <div class="ref-item">[9] Green, R., & Newbery, D. (1992). Competition in the British electricity spot market. Journal of Political Economy, 100(5), 929-953.</div>
+    </div>
+    <div class="ref-group">
+      <h3>ثالثاً: التجارب التطبيقية</h3>
+      <div class="ref-item">[11] Octopus Energy. (2023). Kraken Technology Platform. octopusenergy.com/kraken</div>
+      <div class="ref-item">[12] Ofgem. (2022). Retail Market Review — State of the Energy Market Report. ofgem.gov.uk</div>
+      <div class="ref-item">[14] Nord Pool. (2023). Market Data and Trading Rules. nordpoolgroup.com</div>
+      <div class="ref-item">[15] Rocky Mountain Institute. (2022). Virtual Power Plants: Unlocking the Power of Distributed Energy. rmi.org</div>
+    </div>
+    <div class="ref-group">
+      <h3>رابعاً: التوجهات المستقبلية</h3>
+      <div class="ref-item">[16] IRENA. (2023). Innovation Landscape for a Renewable-Powered Future. irena.org</div>
+      <div class="ref-item">[18] IEA. (2023). Electricity Grids and Secure Energy Transitions. iea.org</div>
+      <div class="ref-item">[20] KAPSARC. (2023). Saudi Arabia Electricity Market Reform: Challenges and Opportunities. kapsarc.org</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="article-footer">
+  <p>إعداد وإشراف علمي: <strong>المدرب فهد رفاعي</strong></p>
+  <p>هندسة الطاقة الكهربائية والطاقة المتجددة — <a href="https://fahdacademy.org" target="_blank">fahdacademy.org</a></p>
+  <a href="index.html" class="btn-sim">⚡ جرّب المحاكاة التفاعلية</a>
+</footer>
+
+</body>
+</html>
