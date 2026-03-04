@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>محاكاة نظام VPP الذكي — المحطات الكهربائية الافتراضية</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #060c1a;
+      --bg-card:    rgba(255,255,255,0.04);
+      --bg-card2:   rgba(255,255,255,0.07);
+      --green:      #00e5a0;
+      --cyan:       #60efff;
+      --gold:       #ffd700;
+      --red:        #ff6b6b;
+      --orange:     #ffb347;
+      --blue:       #4d9fff;
+      --text:       #cde;
+      --muted:      #789;
+      --border:     rgba(255,255,255,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: linear-gradient(135deg, #060c1a 0%, #0a1628 50%, #071220 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Tajawal', sans-serif;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      padding: 40px 20px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(0,229,160,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-badge {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--green);
+      text-transform: uppercase;
+      border: 1px solid rgba(0,229,160,0.3);
+      border-radius: 20px;
+      padding: 4px 16px;
+      margin-bottom: 14px;
+    }
+    header h1 {
+      font-size: clamp(24px, 5vw, 42px);
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+    header p {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; }
+
+    /* ── CONTROLS ── */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .control-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      transition: border-color .3s;
+    }
+    .control-card:hover { border-color: rgba(0,229,160,0.25); }
+    .control-label {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .control-label span { color: var(--green); font-size: 15px; font-weight: 700; }
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(0,229,160,0.5);
+      cursor: pointer;
+    }
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .btn-regen {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, rgba(0,229,160,0.15), rgba(96,239,255,0.1));
+      border: 1px solid rgba(0,229,160,0.4);
+      border-radius: 14px;
+      color: var(--green);
+      font-family: 'Tajawal', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .3s;
+      letter-spacing: 1px;
+    }
+    .btn-regen:hover {
+      background: rgba(0,229,160,0.2);
+      box-shadow: 0 0 20px rgba(0,229,160,0.2);
+      transform: translateY(-1px);
+    }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 768px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 480px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    .kpi-card {
+      background: var(--bg-card);
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: transform .3s, border-color .3s;
+    }
+    .kpi-card:hover { transform: translateY(-3px); }
+    .kpi-icon { font-size: 22px; margin-bottom: 6px; }
+    .kpi-value { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .kpi-label { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+    /* ── CHART CARDS ── */
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .chart-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #abc;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chart-wrap { position: relative; }
+
+    /* ── BOTTOM GRID ── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 700px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+    /* ── DECISION PANEL ── */
+    .decision-title {
+      font-size: 22px;
+      font-weight: 800;
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      transition: all .4s;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .detail-item {
+      background: rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .detail-key { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+    .detail-val { font-size: 14px; font-weight: 700; color: #dde; }
+
+    /* ── DECISION BAR ── */
+    .dec-row { margin-bottom: 12px; }
+    .dec-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .dec-bar-bg {
+      background: rgba(255,255,255,0.06);
+      border-radius: 4px;
+      height: 7px;
+      overflow: hidden;
+    }
+    .dec-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .8s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── ALGO BOX ── */
+    .algo-box {
+      background: rgba(0,229,160,0.05);
+      border: 1px solid rgba(0,229,160,0.2);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 12px;
+      color: #8af;
+      line-height: 1.9;
+      margin-top: 16px;
+    }
+    .algo-box strong { color: var(--green); }
+
+    /* ── PYTHON CODE ── */
+    .code-card {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(96,239,255,0.2);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    .code-title {
+      font-size: 13px;
+      color: var(--cyan);
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    pre {
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #9bb;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .kw { color: #c792ea; }
+    .fn { color: #82aaff; }
+    .st { color: #c3e88d; }
+    .cm { color: #546e7a; font-style: italic; }
+    .nm { color: #f78c6c; }
+    .op { color: var(--cyan); }
+
+    /* ── HOUR SLIDER ── */
+    .hour-slider-wrap {
+      margin-bottom: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+    }
+    .hour-slider-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #abc;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    #hourSlider::-webkit-slider-thumb { background: var(--cyan); box-shadow: 0 0 10px rgba(96,239,255,0.5); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 30px 20px 40px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+    .footer-logo {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 2;
+    }
+    .footer-logo strong { color: var(--green); font-size: 15px; }
+    .footer-logo a {
+      color: var(--cyan);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      border-bottom: 1px solid rgba(96,239,255,0.3);
+      padding-bottom: 2px;
+      transition: color .2s;
+    }
+    .footer-logo a:hover { color: var(--green); }
+    .footer-divider {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      margin: 12px auto;
+      border-radius: 2px;
+    }
+    .pulse-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      margin-left: 6px;
+      animation: pulse 2s infinite;
+      vertical-align: middle;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,160,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(0,229,160,0); }
+    }
+
+    .fade-in { animation: fadeIn .5s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .tag {
+      display: inline-block;
+      background: rgba(0,229,160,0.1);
+      border: 1px solid rgba(0,229,160,0.25);
+      color: var(--green);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 11px;
+      margin: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-badge">Virtual Power Plant — Python Simulation</div>
+  <h1>محاكاة نظام VPP الذكي</h1>
+  <p>
+    منزل مُجهَّز بألواح شمسية + بطارية Tesla Powerwall مرتبط بمنصة VPP —
+    الخوارزمية تقرر في كل ساعة: تبيع، تشحن، تفرغ، أو تشتري من الشبكة
+  </p>
+  <div style="margin-top:14px;">
+    <span class="tag">Python Algorithm</span>
+    <span class="tag">Solar + Battery</span>
+    <span class="tag">Smart Grid</span>
+    <span class="tag">V2G Ready</span>
+    <span class="tag">Energy Economics</span>
+  </div>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<div class="container">
+
+  <!-- Controls -->
+  <div class="controls-grid">
+    <div class="control-card">
+      <div class="control-label">
+        ☁️ معامل الغيوم (Cloud Factor)
+        <span id="cloudVal">20%</span>
+      </div>
+      <input type="range" id="cloudSlider" min="0.3" max="1" step="0.05" value="0.85"
+             oninput="updateCloud(this.value)">
+      <div class="range-labels"><span>غائم جداً ⛅</span><span>مشمس كامل ☀️</span></div>
+    </div>
+
+    <div class="control-card">
+      <div class="control-label" style="color:var(--cyan)">
+        ⚡ الاستهلاك الأساسي
+        <span id="consVal" style="color:var(--cyan)">3 kW</span>
+      </div>
+      <input type="range" id="consSlider" min="1" max="6" step="0.5" value="3"
+             oninput="updateCons(this.value)"
+             style="accent-color:var(--cyan)">
+      <div class="range-labels"><span>منخفض 🏠</span><span>مرتفع 🏭</span></div>
+    </div>
+
+    <div class="control-card">
+      <div class="control-label" style="color:var(--gold)">
+        🔋 سعة البطارية (kWh)
+        <span id="batVal" style="color:var(--gold)">13.5 kWh</span>
+      </div>
+      <input type="range" id="batSlider" min="5" max="27" step="1" value="13.5"
+             oninput="updateBat(this.value)"
+             style="accent-color:var(--gold)">
+      <div class="range-labels"><span>5 kWh</span><span>27 kWh</span></div>
+    </div>
+
+    <div class="control-card" style="display:flex;align-items:center;">
+      <button class="btn-regen" onclick="regenerate()">
+        <span class="pulse-dot"></span>
+        توليد يوم جديد عشوائي
+      </button>
+    </div>
+  </div>
+
+  <!-- Hour Selector -->
+  <div class="hour-slider-wrap">
+    <div class="hour-slider-label">
+      <span>🔍 حدد الساعة لعرض التفاصيل</span>
+      <span id="hourLabel" style="color:var(--cyan);font-weight:800;">12:00</span>
+    </div>
+    <input type="range" id="hourSlider" min="0" max="23" step="1" value="12"
+           oninput="selectHour(+this.value)"
+           style="accent-color:var(--cyan)">
+    <div class="range-labels"><span>12 منتصف الليل</span><span>11 المساء</span></div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi-card" style="border-color:rgba(255,215,0,0.2)">
+      <div class="kpi-icon">☀️</div>
+      <div class="kpi-value" id="kpi-solar" style="color:var(--gold)">—</div>
+      <div class="kpi-label">إنتاج شمسي كلي</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(255,159,127,0.2)">
+      <div class="kpi-icon">🏠</div>
+      <div class="kpi-value" id="kpi-cons" style="color:#ff9f7f">—</div>
+      <div class="kpi-label">استهلاك كلي</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(0,229,160,0.2)">
+      <div class="kpi-icon">📤</div>
+      <div class="kpi-value" id="kpi-export" style="color:var(--green)">—</div>
+      <div class="kpi-label">مُصدَّر للشبكة</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(255,107,107,0.2)">
+      <div class="kpi-icon">📥</div>
+      <div class="kpi-value" id="kpi-import" style="color:var(--red)">—</div>
+      <div class="kpi-label">مستورد من الشبكة</div>
+    </div>
+    <div class="kpi-card" id="kpi-profit-card" style="border-color:rgba(0,229,160,0.2)">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-value" id="kpi-profit" style="color:var(--green)">—</div>
+      <div class="kpi-label">الربح / الخسارة اليومية</div>
+    </div>
+  </div>
+
+  <!-- Chart 1: Solar vs Consumption -->
+  <div class="chart-card">
+    <div class="chart-title">☀️ الإنتاج الشمسي مقابل الاستهلاك — كيلوواط (kW) في كل ساعة</div>
+    <div class="chart-wrap" style="height:200px">
+      <canvas id="chart1"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 2: Battery -->
+  <div class="chart-card">
+    <div class="chart-title">🔋 مستوى شحن البطارية على مدار اليوم (kWh)</div>
+    <div class="chart-wrap" style="height:160px">
+      <canvas id="chart2"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 3: Grid + Price -->
+  <div class="chart-card">
+    <div class="chart-title">📊 الطاقة المُصدَّرة والمستوردة + منحنى سعر الكهرباء</div>
+    <div class="chart-wrap" style="height:180px">
+      <canvas id="chart3"></canvas>
+    </div>
+  </div>
+
+  <!-- Bottom: Decision + Summary -->
+  <div class="bottom-grid">
+
+    <!-- Hour Detail -->
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-title">🔍 تفاصيل الساعة المحددة</div>
+      <div id="decisionTitle" class="decision-title">—</div>
+      <div class="detail-grid" id="detailGrid">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+    <!-- Decision Summary -->
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-title">🤖 توزيع قرارات الخوارزمية (24 ساعة)</div>
+      <div id="decisionBars"></div>
+      <div class="algo-box">
+        💡 <strong>منطق خوارزمية Python:</strong><br>
+        السعر ≥ 22 هللة + بطارية ممتلئة → بيع للشبكة 💰<br>
+        فائض + بطارية غير ممتلئة → شحن البطارية 🔋<br>
+        سعر مرتفع + عجز + بطارية مشحونة → تفريغ البطارية ⚡<br>
+        سعر منخفض + عجز → شراء من الشبكة 🔌<br>
+        البطارية &lt; 10% → شحن إجباري 🚨
+      </div>
+    </div>
+  </div>
+
+  <!-- Python Code -->
+  <div class="code-card" style="margin-top:16px">
+    <div class="code-title">🐍 كود Python الكامل — خوارزمية قرار VPP</div>
+    <pre><span class="cm"># ═══════════════════════════════════════════════════════════
+# VPP Smart Decision Algorithm — Virtual Power Plant
+# مهندس القوى والطاقة: يمكنك تشغيل هذا الكود مباشرة
+# pip install pandas matplotlib numpy
+# ═══════════════════════════════════════════════════════════</span>
+
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="cm"># ── إعدادات النظام ──────────────────────────────────────────</span>
+MAX_BATTERY  = <span class="nm">13.5</span>   <span class="cm"># سعة البطارية الكاملة (kWh) — Tesla Powerwall</span>
+MIN_BATTERY  = <span class="nm">1.0</span>    <span class="cm"># حد الحماية الأدنى (kWh)</span>
+SELL_PRICE   = <span class="nm">0.30</span>   <span class="cm"># سعر البيع للشبكة (ريال/kWh)</span>
+BUY_PRICE    = <span class="nm">0.18</span>   <span class="cm"># سعر الشراء من الشبكة (ريال/kWh)</span>
+SOLAR_PEAK   = <span class="nm">6.0</span>    <span class="cm"># ذروة إنتاج الألواح الشمسية (kW)</span>
+
+<span class="cm"># ── أسعار الكهرباء بالساعة (هللة/kWh) ──────────────────────</span>
+HOURLY_PRICES = [
+    <span class="nm">10</span>, <span class="nm">10</span>, <span class="nm">10</span>, <span class="nm">10</span>, <span class="nm">10</span>, <span class="nm">12</span>,  <span class="cm"># منتصف الليل → الفجر</span>
+    <span class="nm">15</span>, <span class="nm">18</span>, <span class="nm">20</span>, <span class="nm">22</span>, <span class="nm">25</span>, <span class="nm">27</span>,  <span class="cm"># الصباح</span>
+    <span class="nm">28</span>, <span class="nm">27</span>, <span class="nm">25</span>, <span class="nm">22</span>, <span class="nm">24</span>, <span class="nm">28</span>,  <span class="cm"># الظهر → العصر</span>
+    <span class="nm">30</span>, <span class="nm">29</span>, <span class="nm">25</span>, <span class="nm">20</span>, <span class="nm">15</span>, <span class="nm">11</span>   <span class="cm"># المساء → الليل</span>
+]
+
+<span class="kw">def</span> <span class="fn">generate_solar</span>(hour, cloud_factor=<span class="nm">0.85</span>):
+    <span class="st">"""توليد الطاقة الشمسية بناءً على الساعة ومعامل الغيوم"""</span>
+    <span class="kw">if not</span> (<span class="nm">6</span> <= hour <= <span class="nm">18</span>):
+        <span class="kw">return</span> <span class="nm">0.0</span>
+    base = SOLAR_PEAK * np.sin(np.pi * (hour - <span class="nm">6</span>) / <span class="nm">12</span>)
+    noise = np.random.uniform(-<span class="nm">0.3</span>, <span class="nm">0.3</span>)
+    <span class="kw">return</span> max(<span class="nm">0</span>, base * cloud_factor + noise)
+
+<span class="kw">def</span> <span class="fn">generate_consumption</span>(hour, base_kw=<span class="nm">3.0</span>):
+    <span class="st">"""نمط استهلاك المنزل على مدار اليوم"""</span>
+    extra = <span class="nm">0</span>
+    <span class="kw">if</span>   <span class="nm">7</span> <= hour <= <span class="nm">9</span>:  extra = <span class="nm">2.5</span>   <span class="cm"># ذروة الصباح</span>
+    <span class="kw">elif</span> <span class="nm">12</span> <= hour <= <span class="nm">13</span>: extra = <span class="nm">1.5</span>   <span class="cm"># وجبة الغداء</span>
+    <span class="kw">elif</span> <span class="nm">18</span> <= hour <= <span class="nm">22</span>: extra = <span class="nm">3.5</span>   <span class="cm"># ذروة المساء</span>
+    noise = np.random.uniform(-<span class="nm">0.2</span>, <span class="nm">0.2</span>)
+    <span class="kw">return</span> max(<span class="nm">0.5</span>, base_kw + extra + noise)
+
+<span class="kw">def</span> <span class="fn">vpp_decision</span>(solar, consumption, battery, price_halala):
+    <span class="st">"""
+    ✅ خوارزمية قرار VPP الذكية
+    المدخلات: إنتاج شمسي، استهلاك، مستوى البطارية، سعر الكهرباء
+    المخرجات: القرار، تدفق البطارية، تصدير/استيراد الشبكة
+    """</span>
+    price = price_halala / <span class="nm">100</span>   <span class="cm"># تحويل الهللة إلى ريال</span>
+    net   = solar - consumption   <span class="cm"># القدرة الصافية</span>
+
+    <span class="kw">if</span> net > <span class="nm">0</span>:  <span class="cm"># ── فائض في الإنتاج ──</span>
+        <span class="kw">if</span> price >= <span class="nm">0.22</span> <span class="kw">and</span> battery >= MAX_BATTERY * <span class="nm">0.9</span>:
+            <span class="kw">return</span> <span class="st">"بيع للشبكة"</span>, <span class="nm">0</span>, net
+        <span class="kw">elif</span> battery < MAX_BATTERY:
+            charge = min(net, MAX_BATTERY - battery)
+            <span class="kw">return</span> <span class="st">"شحن البطارية"</span>, charge, max(<span class="nm">0</span>, net - charge)
+        <span class="kw">else</span>:
+            <span class="kw">return</span> <span class="st">"بيع للشبكة"</span>, <span class="nm">0</span>, net
+
+    <span class="kw">else</span>:  <span class="cm"># ── عجز في الإنتاج ──</span>
+        deficit = abs(net)
+        <span class="kw">if</span> price >= <span class="nm">0.25</span> <span class="kw">and</span> battery > MIN_BATTERY + <span class="nm">1</span>:
+            discharge = min(deficit, battery - MIN_BATTERY)
+            <span class="kw">return</span> <span class="st">"تفريغ البطارية"</span>, -discharge, max(<span class="nm">0</span>, deficit - discharge)
+        <span class="kw">elif</span> battery <= MIN_BATTERY:
+            <span class="kw">return</span> <span class="st">"شراء من الشبكة"</span>, <span class="nm">0</span>, deficit
+        <span class="kw">else</span>:
+            <span class="kw">return</span> <span class="st">"شراء من الشبكة"</span>, <span class="nm">0</span>, deficit
+
+<span class="kw">def</span> <span class="fn">simulate_day</span>(cloud_factor=<span class="nm">0.85</span>, base_consumption=<span class="nm">3.0</span>):
+    <span class="st">"""محاكاة يوم كامل (24 ساعة) وحساب الأرباح"""</span>
+    battery = MAX_BATTERY * <span class="nm">0.5</span>  <span class="cm"># شحن ابتدائي 50%</span>
+    records = []
+
+    <span class="kw">for</span> h <span class="kw">in</span> range(<span class="nm">24</span>):
+        solar       = generate_solar(h, cloud_factor)
+        consumption = generate_consumption(h, base_consumption)
+        price       = HOURLY_PRICES[h]
+
+        decision, bat_flow, grid_flow = vpp_decision(
+            solar, consumption, battery, price
+        )
+        battery = max(MIN_BATTERY, min(MAX_BATTERY, battery + bat_flow))
+
+        is_export = grid_flow > <span class="nm">0</span> <span class="kw">and</span> solar > consumption
+        profit = (grid_flow * (price/<span class="nm">100</span>) * (<span class="nm">1</span> <span class="kw">if</span> is_export <span class="kw">else</span> -<span class="nm">1</span>))
+
+        records.append({
+            <span class="st">"hour"</span>:       h,
+            <span class="st">"solar"</span>:      round(solar, <span class="nm">2</span>),
+            <span class="st">"consumption"</span>:round(consumption, <span class="nm">2</span>),
+            <span class="st">"battery"</span>:    round(battery, <span class="nm">2</span>),
+            <span class="st">"decision"</span>:   decision,
+            <span class="st">"grid_flow"</span>:  round(grid_flow, <span class="nm">2</span>),
+            <span class="st">"price"</span>:      price,
+            <span class="st">"profit"</span>:     round(profit, <span class="nm">3</span>),
+        })
+
+    df = pd.DataFrame(records)
+    total_profit = df[<span class="st">"profit"</span>].sum()
+    print(f<span class="st">"✅ إجمالي الربح اليومي: {total_profit:.2f} ريال"</span>)
+    <span class="kw">return</span> df
+
+<span class="cm"># ── تشغيل المحاكاة ──────────────────────────────────────────</span>
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    df = simulate_day(cloud_factor=<span class="nm">0.85</span>, base_consumption=<span class="nm">3.0</span>)
+    print(df[[<span class="st">"hour"</span>, <span class="st">"solar"</span>, <span class="st">"consumption"</span>, <span class="st">"battery"</span>, <span class="st">"decision"</span>, <span class="st">"profit"</span>]])
+</pre>
+  </div>
+
+  <!-- About Section -->
+  <div class="chart-card">
+    <div class="chart-title">📚 ما الذي يُعلمنا إياه هذا المشروع؟</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;font-size:13px;line-height:1.8;color:#abc">
+      <div>
+        <div style="color:var(--green);font-weight:700;margin-bottom:6px">🐍 مهارات Python</div>
+        توليد بيانات مُحاكاة، تحليل السلاسل الزمنية، بناء خوارزميات قرار، استخدام Pandas و NumPy
+      </div>
+      <div>
+        <div style="color:var(--cyan);font-weight:700;margin-bottom:6px">⚡ مهارات الطاقة</div>
+        فهم تدفق القدرة، إدارة البطاريات، التسعير الديناميكي للكهرباء، نمذجة الأحمال
+      </div>
+      <div>
+        <div style="color:var(--gold);font-weight:700;margin-bottom:6px">📊 مهارات البيانات</div>
+        تحليل الأنماط، رسم المنحنيات، تفسير النتائج، اتخاذ القرار المبني على البيانات
+      </div>
+      <div>
+        <div style="color:var(--orange);font-weight:700;margin-bottom:6px">🏗️ تطبيق VPP فعلي</div>
+        هذه الخوارزمية هي النواة الأساسية لأي نظام VPP حقيقي — يمكن توسيعها لآلاف المنازل
+      </div>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-divider"></div>
+  <div class="footer-logo">
+    <div>فكرة وإشراف علمي</div>
+    <strong>المدرب فهد رفاعي</strong>
+    <div style="font-size:11px;color:var(--muted);margin:4px 0">هندسة الطاقة الكهربائية والطاقة المتجددة</div>
+    <div style="margin-top:8px">
+      دورات متخصصة في الطاقة الكهربائية والمتجددة<br>
+      <a href="https://fahdacademy.org" target="_blank" rel="noopener">🌐 fahdacademy.org</a>
+    </div>
+  </div>
+  <div class="footer-divider"></div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:8px">
+    Virtual Power Plant Simulation — Educational Tool
+  </div>
+</footer>
+
+<!-- ═══ JAVASCRIPT ═══ -->
+<script>
+// ─── State ───────────────────────────────────────────────────
+let cloudFactor     = 0.85;
+let baseConsumption = 3.0;
+let maxBattery      = 13.5;
+let selectedHour    = 12;
+let simData         = [];
+let charts          = {};
+
+const PRICES = [10,10,10,10,10,12,15,18,20,22,25,27,28,27,25,22,24,28,30,29,25,20,15,11];
+const DEC_COLORS = {
+  "بيع للشبكة 💰":      "#00e5a0",
+  "شحن + بيع ⚡":        "#60efff",
+  "شحن البطارية 🔋":     "#4d9fff",
+  "تفريغ البطارية 🔋":   "#ffb347",
+  "شراء من الشبكة 🔌":   "#ff6b6b",
+};
+
+// ─── Simulation ──────────────────────────────────────────────
+function rnd(min, max) { return Math.random() * (max - min) + min; }
+
+function simulate() {
+  const MIN_BAT = 1.0;
+  let battery = maxBattery * 0.5;
+  const data = [];
+
+  for (let h = 0; h < 24; h++) {
+    // Solar
+    let solar = 0;
+    if (h >= 6 && h <= 18) {
+      solar = Math.max(0, 6 * Math.sin(Math.PI * (h - 6) / 12) * cloudFactor + rnd(-0.3, 0.3));
+    }
+    // Consumption
+    let cons = baseConsumption;
+    if (h >= 7  && h <= 9)  cons += 2.5;
+    if (h >= 12 && h <= 13) cons += 1.5;
+    if (h >= 18 && h <= 22) cons += 3.5;
+    cons = Math.max(0.5, cons + rnd(-0.2, 0.2));
+
+    const net   = solar - cons;
+    const price = PRICES[h];
+    let decision, batFlow = 0, gridExport = 0, gridImport = 0;
+
+    if (net > 0) {
+      if (price >= 22 && battery >= maxBattery * 0.9) {
+        gridExport = net;
+        decision = "بيع للشبكة 💰";
+      } else if (battery < maxBattery) {
+        const charge = Math.min(net, maxBattery - battery);
+        batFlow = charge;
+        battery = Math.min(maxBattery, battery + charge);
+        gridExport = net - charge;
+        decision = gridExport > 0.05 ? "شحن + بيع ⚡" : "شحن البطارية 🔋";
+      } else {
+        gridExport = net;
+        decision = "بيع للشبكة 💰";
+      }
+    } else {
+      const deficit = Math.abs(net);
+      if (price >= 25 && battery > MIN_BAT + 1) {
+        const discharge = Math.min(deficit, battery - MIN_BAT);
+        batFlow = -discharge;
+        battery = Math.max(MIN_BAT, battery - discharge);
+        gridImport = Math.max(0, deficit - discharge);
+        decision = "تفريغ البطارية 🔋";
+      } else {
+        gridImport = deficit;
+        decision = "شراء من الشبكة 🔌";
+      }
+    }
+
+    const profit = gridExport * (price / 100) - gridImport * (price / 100);
+
+    data.push({
+      h, hour: `${h}:00`,
+      solar:      +solar.toFixed(2),
+      cons:       +cons.toFixed(2),
+      battery:    +battery.toFixed(1),
+      batFlow:    +batFlow.toFixed(2),
+      gridExport: +gridExport.toFixed(2),
+      gridImport: +gridImport.toFixed(2),
+      price,
+      profit:     +profit.toFixed(3),
+      decision
+    });
+  }
+  return data;
+}
+
+// ─── Chart helpers ───────────────────────────────────────────
+const HOURS = Array.from({length:24}, (_,i) => `${i}:00`);
+
+function makeGradient(ctx, color1, color2) {
+  const g = ctx.createLinearGradient(0, 0, 0, 200);
+  g.addColorStop(0, color1);
+  g.addColorStop(1, color2);
+  return g;
+}
+
+function buildCharts() {
+  const base = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      rtl: true, bodyFont: { family: 'Tajawal' }, titleFont: { family: 'Tajawal' },
+      backgroundColor: 'rgba(6,12,26,0.95)',
+      borderColor: 'rgba(0,229,160,0.3)', borderWidth: 1,
+      callbacks: { label: ctx => ` ${ctx.parsed.y} kW` }
+    }},
+    scales: {
+      x: { ticks: { color: '#567', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: '#567', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+    }
+  };
+
+  // Chart 1 — Solar vs Consumption
+  const c1 = document.getElementById('chart1').getContext('2d');
+  charts.c1 = new Chart(c1, {
+    type: 'line',
+    data: { labels: HOURS, datasets: [
+      { label: 'إنتاج شمسي', data: [], borderColor: '#ffd700', backgroundColor: 'rgba(255,215,0,0.07)', fill: true, tension: 0.4, borderWidth: 2.5, pointRadius: 0 },
+      { label: 'استهلاك',    data: [], borderColor: '#ff9f7f', backgroundColor: 'rgba(255,159,127,0.07)', fill: true, tension: 0.4, borderWidth: 2.5, pointRadius: 0 },
+    ]},
+    options: { ...base, plugins: { ...base.plugins, legend: { display: true, labels: { color: '#abc', font: { family: 'Tajawal', size: 11 } } } } }
+  });
+
+  // Chart 2 — Battery
+  const c2 = document.getElementById('chart2').getContext('2d');
+  charts.c2 = new Chart(c2, {
+    type: 'line',
+    data: { labels: HOURS, datasets: [
+      { label: 'البطارية (kWh)', data: [], borderColor: '#4d9fff', backgroundColor: 'rgba(77,159,255,0.1)', fill: true, tension: 0.4, borderWidth: 2.5, pointRadius: 0 }
+    ]},
+    options: { ...base,
+      scales: { ...base.scales,
+        y: { ...base.scales.y, min: 0, max: maxBattery + 1,
+          ticks: { color: '#567', font: { size: 10 } },
+          grid:  { color: 'rgba(255,255,255,0.04)' }
+        }
+      }
+    }
+  });
+
+  // Chart 3 — Export / Import + Price
+  const c3 = document.getElementById('chart3').getContext('2d');
+  charts.c3 = new Chart(c3, {
+    type: 'bar',
+    data: { labels: HOURS, datasets: [
+      { label: 'تصدير (kW)',  data: [], backgroundColor: 'rgba(0,229,160,0.7)',  borderRadius: 3, yAxisID: 'y' },
+      { label: 'استيراد (kW)',data: [], backgroundColor: 'rgba(255,107,107,0.7)', borderRadius: 3, yAxisID: 'y' },
+      { label: 'السعر (هللة)',data: [], type: 'line', borderColor: '#ffd700', backgroundColor: 'transparent', borderWidth: 2, tension: 0.4, pointRadius: 0, yAxisID: 'y2' },
+    ]},
+    options: { ...base,
+      plugins: { ...base.plugins, legend: { display: true, labels: { color: '#abc', font: { family: 'Tajawal', size: 11 } } } },
+      scales: {
+        x:  { ticks: { color: '#567', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y:  { ticks: { color: '#567', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' }, position: 'right' },
+        y2: { ticks: { color: 'rgba(255,215,0,0.5)', font: { size: 9 } }, grid: { display: false }, position: 'left' }
+      }
+    }
+  });
+}
+
+// ─── Update UI ───────────────────────────────────────────────
+function updateUI() {
+  // KPIs
+  const solar  = simData.reduce((s, d) => s + d.solar, 0).toFixed(1);
+  const cons   = simData.reduce((s, d) => s + d.cons, 0).toFixed(1);
+  const exp    = simData.reduce((s, d) => s + d.gridExport, 0).toFixed(1);
+  const imp    = simData.reduce((s, d) => s + d.gridImport, 0).toFixed(1);
+  const profit = simData.reduce((s, d) => s + d.profit, 0).toFixed(2);
+
+  document.getElementById('kpi-solar').textContent  = solar  + ' kWh';
+  document.getElementById('kpi-cons').textContent   = cons   + ' kWh';
+  document.getElementById('kpi-export').textContent = exp    + ' kWh';
+  document.getElementById('kpi-import').textContent = imp    + ' kWh';
+  const pEl = document.getElementById('kpi-profit');
+  pEl.textContent = profit + ' ر.س';
+  pEl.style.color = +profit >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Charts
+  charts.c1.data.datasets[0].data = simData.map(d => d.solar);
+  charts.c1.data.datasets[1].data = simData.map(d => d.cons);
+  charts.c1.update('active');
+
+  charts.c2.data.datasets[0].data = simData.map(d => d.battery);
+  charts.c2.options.scales.y.max = maxBattery + 1;
+  charts.c2.update('active');
+
+  charts.c3.data.datasets[0].data = simData.map(d => d.gridExport);
+  charts.c3.data.datasets[1].data = simData.map(d => d.gridImport);
+  charts.c3.data.datasets[2].data = simData.map(d => d.price);
+  charts.c3.update('active');
+
+  // Decision bars
+  const counts = {};
+  simData.forEach(d => { counts[d.decision] = (counts[d.decision] || 0) + 1; });
+  const barsEl = document.getElementById('decisionBars');
+  barsEl.innerHTML = Object.entries(counts).sort((a,b) => b[1]-a[1]).map(([dec, cnt]) => `
+    <div class="dec-row">
+      <div class="dec-header">
+        <span style="color:${DEC_COLORS[dec]||'#aaa'}">${dec}</span>
+        <span style="color:var(--muted)">${cnt} ساعة</span>
+      </div>
+      <div class="dec-bar-bg">
+        <div class="dec-bar-fill" style="width:${(cnt/24*100).toFixed(0)}%;background:${DEC_COLORS[dec]||'#666'}"></div>
+      </div>
+    </div>`).join('');
+
+  updateHourDetail();
+}
+
+function updateHourDetail() {
+  const d = simData[selectedHour];
+  if (!d) return;
+  const color = DEC_COLORS[d.decision] || '#fff';
+  document.getElementById('decisionTitle').textContent = d.decision;
+  document.getElementById('decisionTitle').style.background = color + '15';
+  document.getElementById('decisionTitle').style.color = color;
+
+  document.getElementById('detailGrid').innerHTML = [
+    ['⏰ الساعة',      d.hour],
+    ['☀️ الإنتاج',     d.solar + ' kW'],
+    ['🏠 الاستهلاك',   d.cons + ' kW'],
+    ['🔋 البطارية',    d.battery + ' kWh'],
+    ['📤 تصدير',       d.gridExport + ' kW'],
+    ['📥 استيراد',     d.gridImport + ' kW'],
+    ['💲 السعر',       d.price + ' هللة'],
+    ['💰 الربح',       (d.profit * 100).toFixed(1) + ' هللة'],
+  ].map(([k, v]) => `
+    <div class="detail-item">
+      <div class="detail-key">${k}</div>
+      <div class="detail-val">${v}</div>
+    </div>`).join('');
+}
+
+// ─── Controls ────────────────────────────────────────────────
+function updateCloud(v) {
+  cloudFactor = +v;
+  document.getElementById('cloudVal').textContent = Math.round((1 - v) * 100) + '%';
+  refresh();
+}
+function updateCons(v) {
+  baseConsumption = +v;
+  document.getElementById('consVal').textContent = v + ' kW';
+  refresh();
+}
+function updateBat(v) {
+  maxBattery = +v;
+  document.getElementById('batVal').textContent = v + ' kWh';
+  refresh();
+}
+function selectHour(h) {
+  selectedHour = h;
+  document.getElementById('hourLabel').textContent = `${h}:00`;
+  updateHourDetail();
+}
+function regenerate() { refresh(); }
+
+let refreshTimer;
+function refresh() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => {
+    simData = simulate();
+    updateUI();
+  }, 80);
+}
+
+// ─── Init ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  buildCharts();
+  simData = simulate();
+  updateUI();
+});
+</script>
+</body>
+</html>
